@@ -1,0 +1,36 @@
+name: Windows na Nuvem - Tailscale
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  windows:
+    name: Iniciar Windows
+    runs-on: windows-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Conectar ao Tailscale
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          audience: ${{ secrets.TS_AUDIENCE }}
+          tags: tag:ci
+
+      - name: Verificar ambiente Windows
+        shell: pwsh
+        run: |
+          Write-Host "Windows iniciado!"
+          Write-Host "Sistema:"
+          Get-CimInstance Win32_OperatingSystem |
+            Select-Object Caption, Version
+
+          Write-Host "Endereco Tailscale:"
+          tailscale ip -4
+
+          Write-Host "Estado da rede:"
+          tailscale status
